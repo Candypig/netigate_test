@@ -1,73 +1,74 @@
 import numpy as np
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.svm import SVR
 import joblib
 import os
 import data_preprocess
 from datetime import datetime
 import matplotlib.pyplot as plt
-def decision_Tree_regression(X, y, save_path):
-    tree = DecisionTreeRegressor(max_depth=2)
+def decision_Tree_regression(X, y):
+    tree = DecisionTreeRegressor(max_depth=5)
     tree.fit(X, y)
-    joblib.dump(tree, save_path)
     return tree
 
-def training_setting(mode = "testing", task = "predict_one_day", save_path = False):
-    # mode : training / train_and_test / predict
-    # mode : predict_an_hour / predict_one_day / predict_three_days
-    df_list = data_preprocess.load_csvs("row_data")
-    if mode == "training":
-        training(task, save_path)
-
-def training(task = "predict_one_day", save_path = False):
-    X, y = data_preprocess.training_preprocess(df_list, task)
-    tree = DecisionTreeRegressor(max_depth=2)
-    tree.fit(X, y)
-    if save_path:
-        joblib.dump(tree, save_path)
-    else:
-        print("This model didn't save")
-
-
-
+def setted_SVR(X, y):
+    svr_rbf = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=0.1)
+    svr_rbf.fit(X, y)
+    return svr_rbf
 class decision_tree_method():
     def __init__(self):
         self.df_list = []
-    def training(self, task = "predict_one_day", save_path = False):
+    def training(self, task = "predict_one_day", save_path = "", model_type = "DT"):
+        # model : dt(decision tree) / LR (Linear regression) / SVR (support vector regression)
         self.df_list = data_preprocess.load_csvs("row_data")
         X, y = data_preprocess.training_preprocess(self.df_list, task)
-        tree = DecisionTreeRegressor(max_depth=2)
-        tree.fit(X, y)
-        if save_path:
-            joblib.dump(tree, save_path)
+        if model_type == "DT":
+            model = decision_Tree_regression(X, y)
+        elif model_type == "SVR":
+            model = setted_SVR(X, y)
+        else:
+            print("No such model type")
+            return
+        if save_path != "":
+            joblib.dump(model, save_path)
         else:
             print("This model didn't saved.")
 
-    def testing(self, task="predict_one_day", save_path=False):
+    def testing(self, task="predict_one_day", save_path=False, model_type = "DT"):
+        # model : dt(decision tree) / LR (Linear regression) / SVR (support vector regression)
         self.df_list = data_preprocess.load_csvs("row_data")
         X_training, y_training, X_testing, y_testing = data_preprocess.testing_preprocess(self.df_list, task)
-        tree = DecisionTreeRegressor(max_depth=5)
-        tree.fit(X_training, y_training)
-        y_predict = tree.predict(X_testing)
+        if model_type == "DT":
+            model = decision_Tree_regression(X_training, y_training)
+        elif model_type == "SVR":
+            model = setted_SVR(X_training, y_training)
+        else:
+            print("No such model type")
+            return
+        y_predict = model.predict(X_testing)
         plt.scatter(X_testing[:, 1], y_testing, marker='o', label='Ground Truth')
         plt.scatter(X_testing[:, 1], y_predict, marker='o', label='Predict')
         plt.legend()
         plt.show()
         if save_path:
-            joblib.dump(tree, save_path)
+            joblib.dump(model, save_path)
             print("This model is complete saving.")
         else:
             print("This model didn't saved.")
-    def predict(self, task = "predict_one_day", save_path = False):
-        if save_path:
-            tree = joblib.load(save_path)
+    def predict(self, task = "predict_one_day", save_path = ""):
+        #model : dt(decision tree) / LR (Linear regression) / SVR (support vector regression)
+        if save_path != "":
+            model = joblib.load(save_path)
             current_dateTime = datetime.now()
             if task == "predict_one_day":
                 today = np.asarray([current_dateTime.month, current_dateTime.day]).reshape(1, -1)
-                result = tree.predict(today)
+                result = model.predict(today)
                 return result
         else:
             print("Model hasn't been trained")
 
-model = decision_tree_method()
-model.training(save_path="test_save")
-print(model.predict(save_path="test_save"))
+
+if __name__ == '__main__':
+    model = decision_tree_method()
+    model.training(save_path="test_SVR_save", model_type="SVR")
+    print(model.predict(save_path="test_SVR_save"))

@@ -42,4 +42,5 @@ def merge_dfs(df_list, index_col='day', prefix='df'):
 
     return merged
 
-show_month_plot()
+if __name__ == '__main__':
+    show_month_plot()
