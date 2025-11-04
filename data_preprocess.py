@@ -31,14 +31,27 @@ def group_by_day(df):
     y = result.iloc[:, 3].values
     return result, X, y
 
-def preprocess(df, type = "month"):
+
+def group_by_hour(df):
+    result = df.groupby(['month', 'day', 'hour'], as_index=False).agg({
+        'year': 'first',
+        'month': 'first',
+        'day': 'first',
+        'hour': 'first',
+        '_value': 'sum'
+    })
+    return result
+
+
+def preprocess(df, type="month"):
     pre_df = split_time(df)
     if type == "month":
         pre_df, X, y = group_by_day(pre_df)
         return pre_df, X, y
     return pre_df
 
-def training_preprocess(dflist, mode = "predict_one_day"):
+
+def training_preprocess(dflist, mode="predict_one_day"):
     # mode : predict_an_hour / predict_one_day / predict_three_days
     for i, df in enumerate(dflist):
         dflist[i] = split_time(df)
@@ -47,17 +60,33 @@ def training_preprocess(dflist, mode = "predict_one_day"):
             dflist[i], _, _ = group_by_day(df)
         stack_list = pd.concat(dflist, ignore_index=True)
         return stack_list[['month', 'day']], stack_list['_value']
+    elif mode == "predict_an_hour":
+        for i, df in enumerate(dflist):
+            dflist[i] = group_by_hour(df)
+        stack_list = pd.concat(dflist, ignore_index=True)
+        return stack_list[['month', 'day', 'hour']], stack_list['_value']
 
-def testing_preprocess(dflist, mode = "predict_one_day"):
+
+def testing_preprocess(dflist, mode="predict_one_day"):
     for i, df in enumerate(dflist):
         dflist[i] = split_time(df)
     if mode == "predict_one_day":
         for i, df in enumerate(dflist):
             dflist[i], _, _ = group_by_day(df)
         stack_list = pd.concat(dflist[:-1], ignore_index=True)
-        print(stack_list.head(5))
+
         X_training = stack_list[['month', 'day']].values
         y_training = stack_list['_value'].values
         X_testing = dflist[-1][['month', 'day']].values
+        y_testing = dflist[-1]['_value'].values
+        return X_training, y_training, X_testing, y_testing
+    if mode == "predict_an_hour":
+        for i, df in enumerate(dflist):
+            dflist[i] = group_by_hour(df)
+        stack_list = pd.concat(dflist[:-1], ignore_index=True)
+
+        X_training = stack_list[['month', 'day', 'hour']].values
+        y_training = stack_list['_value'].values
+        X_testing = dflist[-1][['month', 'day', 'hour']].values
         y_testing = dflist[-1]['_value'].values
         return X_training, y_training, X_testing, y_testing
