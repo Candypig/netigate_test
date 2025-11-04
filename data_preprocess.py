@@ -99,7 +99,7 @@ def time_series_preprocess(dflist, task="predict_one_day", mode="training", n_la
     if task == "predict_one_day":
         df = group_by_day(stack_list)
         df.sort_values(['month', 'day'])
-        df, X, y = set_n_lag_df(df)
+        df, X, y = set_n_lag_df(df, n_lag)
         if mode == "training":
             return df, X, y
         elif mode == "testing":
@@ -113,6 +113,13 @@ def set_n_lag_df(df, n_lag=3):
     for i in range(1, n_lag + 1):
         df[f'lag_{i}'] = df['_value'].shift(i)
     df = df.dropna()
-    X = df[[f'lag_{i}' for i in range(1, n_lag + 1)]]
-    y = df['_value']
+    X = df[[f'lag_{i}' for i in range(1, n_lag + 1)]].values
+    y = df['_value'].values
     return df, X, y
+
+
+if __name__ == '__main__':
+    # small function test
+    dflist = load_csvs("row_data")
+    df, _, _ = time_series_preprocess(dflist)
+    print(df.head(5))
