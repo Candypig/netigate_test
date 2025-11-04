@@ -9,10 +9,10 @@ def show_month_plot():
     august_data = data_preprocess.get_data("row_data/8月_用電量.csv")
     sep_data = data_preprocess.get_data("row_data/9月_用電量.csv")
     oct_data = data_preprocess.get_data("row_data/10月_用電量.csv")
-    july_data, x, y = data_preprocess.preprocess(july_data)
-    august_data, x, y = data_preprocess.preprocess(august_data)
-    sep_data, x, y = data_preprocess.preprocess(sep_data)
-    oct_data, x, y = data_preprocess.preprocess(oct_data)
+    july_data = data_preprocess.preprocess(july_data)
+    august_data = data_preprocess.preprocess(august_data)
+    sep_data = data_preprocess.preprocess(sep_data)
+    oct_data = data_preprocess.preprocess(oct_data)
     mergy_show([july_data, august_data, sep_data, oct_data])
 
 

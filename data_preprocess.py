@@ -27,9 +27,9 @@ def group_by_day(df):
         'day': 'first',
         '_value': 'sum'
     })
-    X = result.iloc[:, 1:3].values
-    y = result.iloc[:, 3].values
-    return result, X, y
+    #X = result.iloc[:, 1:3].values
+    #y = result.iloc[:, 3].values
+    return result
 
 
 def group_by_hour(df):
@@ -46,8 +46,8 @@ def group_by_hour(df):
 def preprocess(df, type="month"):
     pre_df = split_time(df)
     if type == "month":
-        pre_df, X, y = group_by_day(pre_df)
-        return pre_df, X, y
+        pre_df = group_by_day(pre_df)
+        return pre_df
     return pre_df
 
 
@@ -57,7 +57,7 @@ def training_preprocess(dflist, mode="predict_one_day"):
         dflist[i] = split_time(df)
     if mode == "predict_one_day" or "predict_three_days":
         for i, df in enumerate(dflist):
-            dflist[i], _, _ = group_by_day(df)
+            dflist[i] = group_by_day(df)
         stack_list = pd.concat(dflist, ignore_index=True)
         return stack_list[['month', 'day']], stack_list['_value']
     elif mode == "predict_an_hour" or "predict_three_days":
@@ -72,7 +72,7 @@ def testing_preprocess(dflist, mode="predict_one_day"):
         dflist[i] = split_time(df)
     if mode == "predict_one_day":
         for i, df in enumerate(dflist):
-            dflist[i], _, _ = group_by_day(df)
+            dflist[i] = group_by_day(df)
         stack_list = pd.concat(dflist[:-1], ignore_index=True)
 
         X_training = stack_list[['month', 'day']].values
@@ -90,3 +90,29 @@ def testing_preprocess(dflist, mode="predict_one_day"):
         X_testing = dflist[-1][['month', 'day', 'hour']].values
         y_testing = dflist[-1]['_value'].values
         return X_training, y_training, X_testing, y_testing
+
+
+def time_series_preprocess(dflist, task="predict_one_day", mode="training", n_lag=3):
+    for i, df in enumerate(dflist):
+        dflist[i] = split_time(df)
+    stack_list = pd.concat(dflist, ignore_index=True)
+    if task == "predict_one_day":
+        df = group_by_day(stack_list)
+        df.sort_values(['month', 'day'])
+        X, y = set_n_lag_df(df)
+        if mode == "training":
+            return X, y
+        elif mode == "testing":
+            train_size = int(len(df) * 0.8)
+            X_training, X_testing = X.iloc[:train_size], X.iloc[train_size:]
+            y_training, y_testing = y.iloc[:train_size], y.iloc[train_size:]
+            return X_training, y_training, X_testing, y_testing
+
+
+def set_n_lag_df(df, n_lag=3):
+    for i in range(1, n_lag + 1):
+        df[f'lag_{i}'] = df['_value'].shift(i)
+    df = df.dropna()
+    X = df[[f'lag_{i}' for i in range(1, n_lag + 1)]]
+    y = df['_value']
+    return X, y
