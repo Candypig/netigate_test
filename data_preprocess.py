@@ -99,9 +99,9 @@ def time_series_preprocess(dflist, task="predict_one_day", mode="training", n_la
     if task == "predict_one_day":
         df = group_by_day(stack_list)
         df.sort_values(['month', 'day'])
-        X, y = set_n_lag_df(df)
+        df, X, y = set_n_lag_df(df)
         if mode == "training":
-            return X, y
+            return df, X, y
         elif mode == "testing":
             train_size = int(len(df) * 0.8)
             X_training, X_testing = X.iloc[:train_size], X.iloc[train_size:]
@@ -115,4 +115,4 @@ def set_n_lag_df(df, n_lag=3):
     df = df.dropna()
     X = df[[f'lag_{i}' for i in range(1, n_lag + 1)]]
     y = df['_value']
-    return X, y
+    return df, X, y
