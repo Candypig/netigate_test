@@ -55,12 +55,12 @@ def training_preprocess(dflist, mode="predict_one_day"):
     # mode : predict_an_hour / predict_one_day / predict_three_days
     for i, df in enumerate(dflist):
         dflist[i] = split_time(df)
-    if mode == "predict_one_day":
+    if mode == "predict_one_day" or "predict_three_days":
         for i, df in enumerate(dflist):
             dflist[i], _, _ = group_by_day(df)
         stack_list = pd.concat(dflist, ignore_index=True)
         return stack_list[['month', 'day']], stack_list['_value']
-    elif mode == "predict_an_hour":
+    elif mode == "predict_an_hour" or "predict_three_days":
         for i, df in enumerate(dflist):
             dflist[i] = group_by_hour(df)
         stack_list = pd.concat(dflist, ignore_index=True)

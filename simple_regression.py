@@ -4,7 +4,7 @@ from sklearn.svm import SVR
 import joblib
 import os
 import data_preprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 def decision_Tree_regression(X, y):
     tree = DecisionTreeRegressor(max_depth=5, min_samples_split=5)
@@ -76,11 +76,20 @@ class decision_tree_method():
                 today = np.asarray([current_dateTime.month, current_dateTime.day, current_dateTime.hour]).reshape(1, -1)
                 result = model.predict(today)
                 return result
+            elif task == "predict_three_days":
+                day_list = []
+                for i in range(3):
+                    today = current_dateTime + timedelta(days=i)
+                    day_X = np.asarray([today.month, today.day])
+                    day_list.append(day_X)
+
+                result = model.predict(np.asarray(day_list))
+                return result
         else:
             print("Model hasn't been trained")
 
 
 if __name__ == '__main__':
     model = decision_tree_method()
-    model.training(save_path="test_save", task="predict_an_hour", model_type="SVR")
-    print(model.predict(save_path="test_save", task="predict_an_hour"))
+    model.training(save_path="test_save", task="predict_three_days", model_type="SVR")
+    print(model.predict(save_path="test_save", task="predict_three_days"))
