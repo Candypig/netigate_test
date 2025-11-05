@@ -15,9 +15,10 @@ def setted_SVR(X, y):
     svr_rbf = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=0.1)
     svr_rbf.fit(X, y)
     return svr_rbf
-class decision_tree_method():
+class simple_regression():
     def __init__(self):
         self.df_list = []
+        self.model = None
     def training(self, task = "predict_one_day", save_path = "", model_type = "DT"):
         # task : predict_an_hour / predict_one_day / predict_three_days
         # model : dt(decision tree) / LR (Linear regression) / SVR (support vector regression)
@@ -32,8 +33,10 @@ class decision_tree_method():
             return
         if save_path != "":
             joblib.dump(model, save_path)
+            print("This model is complete saving.")
         else:
             print("This model didn't saved.")
+        self.model = model
 
     def testing(self, task="predict_one_day", save_path=False, model_type="DT"):
         # model : dt(decision tree) / SVR (support vector regression)
@@ -63,6 +66,7 @@ class decision_tree_method():
             print("This model is complete saving.")
         else:
             print("This model didn't saved.")
+        self.model = model
     def predict(self, task = "predict_one_day", save_path = ""):
         #model : dt(decision tree) / SVR (support vector regression)
         if save_path != "":
@@ -87,9 +91,14 @@ class decision_tree_method():
                 return result
         else:
             print("Model hasn't been trained")
+    def saving(self, save_path):
+        if not self.model is None:
+            joblib.dump(self.model, save_path)
+            print("This model is complete saving.")
 
 
 if __name__ == '__main__':
-    model = decision_tree_method()
+    model = simple_regression()
+    model.saving("test_save")
     model.training(save_path="test_save", task="predict_three_days", model_type="SVR")
     print(model.predict(save_path="test_save", task="predict_three_days"))

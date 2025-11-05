@@ -96,17 +96,32 @@ def time_series_preprocess(dflist, task="predict_one_day", mode="training", n_la
     for i, df in enumerate(dflist):
         dflist[i] = split_time(df)
     stack_list = pd.concat(dflist, ignore_index=True)
-    if task == "predict_one_day":
+    if task == "predict_one_day" or task == "predict_three_days":
         df = group_by_day(stack_list)
         df.sort_values(['month', 'day'])
-        df, X, y = set_n_lag_df(df, n_lag)
+        X, y = set_n_lag_df(df, n_lag)
         if mode == "training":
-            return df, X, y
+            return X, y
+        elif mode == "testing":
+            train_size = int(len(df) * 0.8)
+            X_training, X_testing = X[:train_size], X[train_size:]
+            y_training, y_testing = y[:train_size], y[train_size:]
+            return X_training, y_training, X_testing, y_testing
+        elif mode == "predict":
+            return X.tail(1)
+    elif task == "predict_an_hour":
+        df = group_by_hour(stack_list)
+        df.sort_values(['month', 'day', 'hour'])
+        X, y = set_n_lag_df(df, n_lag)
+        if mode == "training":
+            return X, y
         elif mode == "testing":
             train_size = int(len(df) * 0.8)
             X_training, X_testing = X.iloc[:train_size], X.iloc[train_size:]
             y_training, y_testing = y.iloc[:train_size], y.iloc[train_size:]
             return X_training, y_training, X_testing, y_testing
+        elif mode == "predict":
+            return X.tail(1).values
 
 
 def set_n_lag_df(df, n_lag=3):
@@ -115,7 +130,7 @@ def set_n_lag_df(df, n_lag=3):
     df = df.dropna()
     X = df[[f'lag_{i}' for i in range(1, n_lag + 1)]].values
     y = df['_value'].values
-    return df, X, y
+    return X, y
 
 
 if __name__ == '__main__':
