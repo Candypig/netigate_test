@@ -86,8 +86,11 @@ class time_sereis_regression():
         self.model = model
 
     def predict(self, task = "predict_one_day", save_path = "", n_lag=3):
-        if save_path != "":
-            model = joblib.load(save_path)
+        if save_path != "" or self.model is not None:
+            if self.model is None:
+                model = joblib.load(save_path)
+            else:
+                model = self.model
             df_list = data_preprocess.load_csvs("row_data")
             X = data_preprocess.time_series_preprocess(df_list, task, mode="predict", n_lag=n_lag)
             if task == "predict_one_day" or task == "predict_an_hour":

@@ -69,8 +69,11 @@ class simple_regression():
         self.model = model
     def predict(self, task = "predict_one_day", save_path = ""):
         #model : dt(decision tree) / SVR (support vector regression)
-        if save_path != "":
-            model = joblib.load(save_path)
+        if save_path != "" or self.model is not None:
+            if self.model is None:
+                model = joblib.load(save_path)
+            else :
+                model = self.model
             current_dateTime = datetime.now()
             if task == "predict_one_day":
                 today = np.asarray([current_dateTime.month, current_dateTime.day]).reshape(1, -1)
