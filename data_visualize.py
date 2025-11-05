@@ -1,8 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import data_preprocess
-import numpy as np
 from functools import reduce
+import simple_regression
+import time_series_method
 
 def show_month_plot():
     july_data = data_preprocess.get_data("row_data/7月_用電量.csv")
@@ -44,3 +45,10 @@ def merge_dfs(df_list, index_col='day', prefix='df'):
 
 if __name__ == '__main__':
     show_month_plot()
+    s_model = simple_regression.simple_regression()
+    s_model.testing(task="predict_one_day", model_type="DT")
+    s_model.testing(task="predict_one_day", model_type="SVR")
+    t_model = time_series_method.time_sereis_regression()
+    t_model.testing(task="predict_one_day", model_type="LR")
+    t_model.testing(task="predict_one_day", model_type="DT")
+    t_model.testing(task="predict_one_day", model_type="SVR")

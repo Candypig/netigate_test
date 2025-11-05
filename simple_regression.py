@@ -59,6 +59,7 @@ class simple_regression():
         if task == "predict_one_day" or task == "predict_three_days":
             plt.scatter(X_testing[:, 1], y_testing, marker='o', label='Ground Truth')
             plt.scatter(X_testing[:, 1], y_predict, marker='o', label='Predict')
+            plt.title("Date as feature : "+model_type)
             plt.legend()
             plt.show()
         if save_path:

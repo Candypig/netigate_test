@@ -76,6 +76,7 @@ class time_sereis_regression():
             print(y_testing.shape)
             plt.scatter(id, y_testing, marker='o', label='Ground Truth')
             plt.scatter(id, y_predict, marker='o', label='Predict')
+            plt.title("time series : " + model_type)
             plt.legend()
             plt.show()
         if save_path:
