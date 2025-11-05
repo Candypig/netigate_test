@@ -108,7 +108,7 @@ def time_series_preprocess(dflist, task="predict_one_day", mode="training", n_la
             y_training, y_testing = y[:train_size], y[train_size:]
             return X_training, y_training, X_testing, y_testing
         elif mode == "predict":
-            return X.tail(1)
+            return X[-1].reshape(1, -1)
     elif task == "predict_an_hour":
         df = group_by_hour(stack_list)
         df.sort_values(['month', 'day', 'hour'])
@@ -117,8 +117,8 @@ def time_series_preprocess(dflist, task="predict_one_day", mode="training", n_la
             return X, y
         elif mode == "testing":
             train_size = int(len(df) * 0.8)
-            X_training, X_testing = X.iloc[:train_size], X.iloc[train_size:]
-            y_training, y_testing = y.iloc[:train_size], y.iloc[train_size:]
+            X_training, X_testing = X[:train_size], X[train_size:]
+            y_training, y_testing = y[:train_size], y[train_size:]
             return X_training, y_training, X_testing, y_testing
         elif mode == "predict":
             return X.tail(1).values
